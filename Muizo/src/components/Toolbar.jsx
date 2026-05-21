@@ -1,9 +1,65 @@
-export function Toolbar({ onToggleSettings, settingsOpen, onOpenQuiz, hasActiveNote }) {
+import { highlightColors } from '../config/themes'
+import { applyHighlight } from './Editor'
+
+export function Toolbar({ onToggleSettings, settingsOpen, onOpenQuiz, hasActiveNote, prefs, setPref }) {
+  function handleHighlight(colorId) {
+    const sel = window.getSelection()
+    if (!sel || sel.isCollapsed) return
+    setPref('highlightColor', colorId)
+    const colorEntry = highlightColors.find(c => c.id === colorId)
+    applyHighlight(colorEntry?.hex ?? 'none')
+  }
+
   return (
     <div
       className="parch-topbar flex items-center justify-end gap-1 px-3"
       style={{ height: '44px', flexShrink: 0 }}
     >
+      {/* Highlight color swatches */}
+      <div className="flex items-center gap-1.5 mr-0.5" aria-label="Highlight color">
+        {highlightColors.map(color => {
+          const isSelected = prefs?.highlightColor === color.id
+          const isNone = color.id === 'none'
+          return (
+            <button
+              key={color.id}
+              onClick={() => handleHighlight(color.id)}
+              aria-label={`Highlight: ${color.label}`}
+              aria-pressed={isSelected}
+              title={color.label}
+              className="relative rounded-full focus:outline-none transition-transform hover:scale-110 active:scale-95"
+              style={{
+                width: '17px',
+                height: '17px',
+                flexShrink: 0,
+                backgroundColor: isNone ? '#f5f1eb' : color.hex,
+                border: isNone ? '1px solid #d4cfc7' : 'none',
+                boxShadow: isSelected
+                  ? `0 0 0 2px white, 0 0 0 3.5px ${isNone ? '#94a3b8' : color.hex}`
+                  : '0 1px 2px rgba(0,0,0,0.16)',
+                transition: 'transform 0.12s, box-shadow 0.15s',
+              }}
+            >
+              {isNone && (
+                <svg
+                  width="9"
+                  height="9"
+                  viewBox="0 0 9 9"
+                  aria-hidden="true"
+                  style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, margin: 'auto' }}
+                >
+                  <line x1="2.5" y1="2.5" x2="6.5" y2="6.5" stroke="#b0a898" strokeWidth="1.4" strokeLinecap="round" />
+                  <line x1="6.5" y1="2.5" x2="2.5" y2="6.5" stroke="#b0a898" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Divider */}
+      <div className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true" />
+
       {/* Quiz button */}
       <button
         onClick={onOpenQuiz}

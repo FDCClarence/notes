@@ -313,6 +313,8 @@ function App() {
           settingsOpen={isSettingsOpen}
           onOpenQuiz={() => setQuizOpen(true)}
           hasActiveNote={!!activeNote}
+          prefs={prefs}
+          setPref={prefs.setPref}
         />
 
         {/* Editor area — relative so the napkin overlay stays contained */}
