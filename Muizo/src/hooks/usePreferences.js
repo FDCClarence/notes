@@ -19,6 +19,7 @@ function loadPrefs() {
     const prefs = raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS }
     if (prefs.highlightColor === 'none') prefs.highlightColor = 'yellow'
     if (prefs.surface === 'napkin') prefs.surface = DEFAULTS.surface
+    if (prefs.surface === 'plain') prefs.surface = 'notebook'
     return prefs
   } catch {
     return { ...DEFAULTS }

@@ -12,6 +12,7 @@ export const surfaces = {
   },
   plain: {
     label: 'Plain',
+    hidden: true,
     bg: '#FAFAF8',
     rule: '#E0DDD4',
     borderLeft: null,

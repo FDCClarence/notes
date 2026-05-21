@@ -36,6 +36,9 @@
 .parch-topbar {
   background-color: #C8B48C;
   border-bottom: 1px solid var(--parch-border-hard);
+  /* Above the editor (z-index 1) so the highlight dropdown can receive clicks */
+  z-index: 10;
+  overflow: visible;
 }
 
 .parch-sidebar-toggle {
