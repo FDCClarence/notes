@@ -188,8 +188,8 @@ export function Toolbar({
         className="focus:outline-none rounded transition-colors"
         style={{
           padding: '6px',
-          color: settingsOpen ? '#1e293b' : '#94a3b8',
-          backgroundColor: settingsOpen ? '#f1f5f9' : 'transparent',
+          color: settingsOpen ? 'var(--parch-accent-dark)' : 'var(--parch-dark)',
+          backgroundColor: settingsOpen ? 'var(--parch-active)' : 'transparent',
         }}
       >
         <svg
