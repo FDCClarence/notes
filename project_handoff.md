@@ -207,7 +207,7 @@ Highlight HTML is inline `<span style="background-color: …">` — no sanitizat
 
 ## 10. Quiz (`useQuiz.js` + `QuizModal.jsx`)
 
-- Model: `claude-sonnet-4-20250514`
+- Model: `claude-sonnet-4-6`
 - Env: `VITE_ANTHROPIC_API_KEY` (bundled into client — **not for production** without a proxy)
 - Header: `anthropic-dangerous-direct-browser-access: true`
 - Strips HTML; expects JSON array `{ question, answer, type: 'short' }`

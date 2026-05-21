@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { getItemWithMigration } from '../utils/localStorage'
 
-const STORAGE_KEY = 'noter_prefs'
+const STORAGE_KEY = 'muizo_prefs'
+const LEGACY_KEY = 'noter_prefs'
 
 const DEFAULTS = {
   surface: 'yellow',
@@ -13,7 +15,7 @@ const DEFAULTS = {
 
 function loadPrefs() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = getItemWithMigration(STORAGE_KEY, LEGACY_KEY)
     const prefs = raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS }
     if (prefs.highlightColor === 'none') prefs.highlightColor = 'yellow'
     if (prefs.surface === 'napkin') prefs.surface = DEFAULTS.surface

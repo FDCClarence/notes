@@ -95,7 +95,7 @@ export function Toolbar({
           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
           <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
         </svg>
-        <span>QUIZ ME</span>
+        <span className="hidden sm:inline">QUIZ ME</span>
       </button>
 
       {actionsMounted && (
@@ -112,7 +112,7 @@ export function Toolbar({
           aria-expanded={dropdownOpen}
         >
           <span aria-hidden="true" style={{ fontSize: '12px', lineHeight: 1 }}>✦</span>
-          <span>Highlight Color :</span>
+          <span className="hidden sm:inline">Highlight Color :</span>
           <span
             className="parch-highlight-btn__swatch"
             aria-hidden="true"

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
+import { getItemWithMigration } from '../utils/localStorage'
 
-const STORAGE_KEY = 'noter_notes'
+const STORAGE_KEY = 'muizo_notes'
+const LEGACY_KEY = 'noter_notes'
 
 const BLOCK_TAGS = new Set(['DIV', 'P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'])
 
@@ -84,7 +86,7 @@ export function getNoteTitle(note) {
 
 function loadNotes() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = getItemWithMigration(STORAGE_KEY, LEGACY_KEY)
     return raw ? JSON.parse(raw) : []
   } catch {
     return []

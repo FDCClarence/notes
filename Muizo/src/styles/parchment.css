@@ -102,6 +102,18 @@
   cursor: not-allowed;
 }
 
+@media (max-width: 639px) {
+  .parch-quiz-btn,
+  .parch-highlight-btn {
+    gap: 4px;
+    padding: 4px 7px;
+  }
+
+  .parch-quiz-btn {
+    margin-right: 4px;
+  }
+}
+
 .parch-highlight-btn {
   display: flex;
   align-items: center;
@@ -305,11 +317,7 @@
 .parch-text-mid   { color: var(--parch-mid); }
 .parch-text-faint { color: var(--parch-faint); }
 
-/* Editor: fixed first-line label + title hint (not stored in note HTML) */
-.editor-title-prefix {
-  user-select: none;
-}
-
+/* Editor: empty-note title hint (not stored in note HTML) */
 .editor-title-placeholder {
   color: var(--parch-faint);
   font-style: italic;

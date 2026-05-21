@@ -1,15 +1,72 @@
 import { useState, useCallback } from 'react'
 
-const MODEL = 'claude-sonnet-4-20250514'
+const MODEL = 'claude-sonnet-4-6'
 
-const SYSTEM_PROMPT =
-  "You are a study assistant. Given a set of notes, generate 1-10 questions depending on the amount of notes. quiz questions to test understanding. Return ONLY a JSON array — no markdown, no explanation — where each item has: { question: string, answer: string, type: 'short' }"
+const SYSTEM_PROMPT = `You are a study assistant. The user will provide notes. Create quiz questions that test understanding of that material.
+
+Rules:
+- Return ONLY a valid JSON array. No markdown, no code fences, no explanation before or after.
+- NEVER return an empty array. Always return at least 3 questions, even if the notes are short (use the available text; ask about key terms, claims, or implications).
+- Return 3–10 questions: more notes → more questions.
+- Each item: { "question": string, "answer": string, "type": "short" }
+- Answers must be concise (1–3 sentences) and grounded in the notes.`
+
+const MIN_NOTE_CHARS = 24
 
 function stripHtml(html) {
   if (!html) return ''
   const el = document.createElement('div')
   el.innerHTML = html
   return (el.textContent || el.innerText || '').trim()
+}
+
+function normalizeQuestions(parsed) {
+  if (!Array.isArray(parsed)) return []
+  return parsed
+    .map((q) => ({
+      question: String(q?.question ?? '').trim(),
+      answer: String(q?.answer ?? '').trim(),
+      type: 'short',
+    }))
+    .filter((q) => q.question && q.answer)
+}
+
+function parseQuestionsFromText(raw) {
+  const trimmed = raw.trim()
+  try {
+    return normalizeQuestions(JSON.parse(trimmed))
+  } catch {
+    const match = trimmed.match(/\[[\s\S]*\]/)
+    if (!match) throw new Error('The AI returned an unexpected format. Please try again.')
+    return normalizeQuestions(JSON.parse(match[0]))
+  }
+}
+
+async function requestQuestions(apiKey, messages) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 2048,
+      system: SYSTEM_PROMPT,
+      messages,
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body?.error?.message ?? `Request failed (${res.status})`)
+  }
+
+  const data = await res.json()
+  const raw = (data.content?.[0]?.text ?? '').trim()
+  return parseQuestionsFromText(raw)
 }
 
 // status: 'idle' | 'loading' | 'ready' | 'error'
@@ -29,7 +86,7 @@ export function useQuiz() {
 
     const plainText = stripHtml(htmlContent)
 
-    if (!plainText) {
+    if (!plainText || plainText.length < MIN_NOTE_CHARS) {
       setError({ code: 'empty_note', message: 'empty_note' })
       setStatus('error')
       return
@@ -39,45 +96,24 @@ export function useQuiz() {
     setError(null)
     setQuestions([])
 
+    const userContent = `Generate quiz questions from these notes:\n\n${plainText}`
+
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: MODEL,
-          max_tokens: 2048,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: plainText }],
-        }),
-      })
+      let parsed = await requestQuestions(apiKey, [{ role: 'user', content: userContent }])
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body?.error?.message ?? `Request failed (${res.status})`)
+      if (parsed.length === 0) {
+        parsed = await requestQuestions(apiKey, [
+          { role: 'user', content: userContent },
+          { role: 'assistant', content: '[]' },
+          {
+            role: 'user',
+            content:
+              'You returned an empty JSON array. The notes above contain material to quiz on. Return at least 3 questions as a JSON array only — no empty array.',
+          },
+        ])
       }
 
-      const data = await res.json()
-      const raw = (data.content?.[0]?.text ?? '').trim()
-
-      let parsed
-      try {
-        parsed = JSON.parse(raw)
-      } catch {
-        // Gracefully extract JSON array if model added surrounding text
-        const match = raw.match(/\[[\s\S]*\]/)
-        if (match) {
-          parsed = JSON.parse(match[0])
-        } else {
-          throw new Error('The AI returned an unexpected format. Please try again.')
-        }
-      }
-
-      if (!Array.isArray(parsed) || parsed.length === 0) {
+      if (parsed.length === 0) {
         throw new Error('No questions were generated. Try adding more content to your note.')
       }
 
