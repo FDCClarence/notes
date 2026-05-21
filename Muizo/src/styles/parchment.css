@@ -1,0 +1,157 @@
+/* ── Custom properties ──────────────────────────────────────────────────────── */
+:root {
+  --parch-dark:        #2C1F0E;
+  --parch-mid:         #6B5535;
+  --parch-faint:       #9C7E52;
+  --parch-accent:      #8B6534;
+  --parch-accent-dark: #6B4A22;
+  --parch-hover:       rgba(100, 70, 30, 0.08);
+  --parch-active:      rgba(100, 70, 30, 0.15);
+  --parch-border:      rgba(100, 70, 30, 0.20);
+  --parch-border-hard: #B8A07A;
+}
+
+/* ── Texture regions — base position ───────────────────────────────────────── */
+.parch-topbar,
+.parch-sidebar,
+.parch-settings {
+  position: relative;
+}
+
+.parch-topbar > *,
+.parch-sidebar > *,
+.parch-settings > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Region: topbar ─────────────────────────────────────────────────────────── */
+.parch-topbar {
+  background-color: #C8B48C;
+  border-bottom: 1px solid var(--parch-border-hard);
+}
+
+.parch-topbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.10;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='48'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.90' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='48' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E");
+  background-size: 400px 48px;
+  background-repeat: repeat;
+}
+
+/* ── Region: sidebar ────────────────────────────────────────────────────────── */
+.parch-sidebar {
+  background-color: #D9C9A8;
+  border-right: 1px solid var(--parch-border-hard);
+}
+
+.parch-sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.10;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='300' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E");
+  background-size: 240px 300px;
+  background-repeat: repeat;
+}
+
+/* ── Region: settings panel ─────────────────────────────────────────────────── */
+.parch-settings {
+  background-color: #DDD0B0;
+  border-left: 1px solid var(--parch-border-hard);
+}
+
+.parch-settings::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.10;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.70' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='320' height='400' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E");
+  background-size: 320px 400px;
+  background-repeat: repeat;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────────── */
+.parch-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--parch-hover);
+  border: 1px solid var(--parch-border);
+  border-radius: 6px;
+  padding: 5px 11px;
+  font-size: 13px;
+  color: var(--parch-dark);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.parch-btn:hover {
+  background: var(--parch-active);
+}
+
+.parch-btn-primary {
+  background: var(--parch-accent);
+  border-color: var(--parch-accent-dark);
+  color: #FDF5E4;
+}
+
+.parch-btn-primary:hover {
+  background: var(--parch-accent-dark);
+}
+
+/* ── Input ───────────────────────────────────────────────────────────────────── */
+.parch-input {
+  background: rgba(255, 248, 230, 0.5);
+  border: 1px solid var(--parch-border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  color: var(--parch-dark);
+  outline: none;
+}
+
+.parch-input:focus {
+  background: rgba(255, 248, 230, 0.75);
+  border-color: rgba(100, 70, 30, 0.4);
+}
+
+.parch-input::placeholder {
+  color: var(--parch-faint);
+}
+
+/* ── Text utilities ──────────────────────────────────────────────────────────── */
+.parch-text       { color: var(--parch-dark); }
+.parch-text-mid   { color: var(--parch-mid); }
+.parch-text-faint { color: var(--parch-faint); }
+
+/* ── Note list item ──────────────────────────────────────────────────────────── */
+.parch-note-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--parch-border);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.parch-note-item:hover {
+  background: var(--parch-hover);
+}
+
+.parch-note-item.active {
+  background: var(--parch-active);
+  border-left: 3px solid var(--parch-accent);
+}
+
+/* ── Divider ─────────────────────────────────────────────────────────────────── */
+.parch-divider {
+  height: 1px;
+  background: var(--parch-border-hard);
+  opacity: 0.5;
+}
