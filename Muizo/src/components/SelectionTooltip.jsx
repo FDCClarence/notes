@@ -51,7 +51,7 @@ function isSelectionHighlighted(editorRoot) {
   return false
 }
 
-export function SelectionTooltip({ editorRef, prefs, quizOpen, settingsOpen }) {
+export function SelectionTooltip({ editorRef, prefs, quizOpen, settingsOpen, isDark = false }) {
   const [tipState, setTipState] = useState(null) // { rect, isHighlighted } | null
 
   // Hide whenever modal/settings opens
@@ -122,13 +122,13 @@ export function SelectionTooltip({ editorRef, prefs, quizOpen, settingsOpen }) {
     e.preventDefault()
     const entry =
       highlightColors.find(c => c.id === prefs.highlightColor) ?? highlightColors[0]
-    applyHighlight(entry.hex)
+    applyHighlight(entry.hex, { isDark, editorRoot: editorRef.current })
     setTipState(null)
   }
 
   function handleRemoveClick(e) {
     e.preventDefault()
-    applyHighlight('none')
+    applyHighlight('none', { isDark, editorRoot: editorRef.current })
     setTipState(null)
   }
 
@@ -144,6 +144,9 @@ export function SelectionTooltip({ editorRef, prefs, quizOpen, settingsOpen }) {
     animation: 'seltooltip-fadein 0.12s ease both',
   }
 
+  const bgDefault = isDark ? '#f5f5f0' : '#fdf7eb'
+  const bgHover   = isDark ? '#e8e8e3' : '#f5eddb'
+
   const btnStyle = {
     display: 'flex',
     alignItems: 'center',
@@ -151,14 +154,16 @@ export function SelectionTooltip({ editorRef, prefs, quizOpen, settingsOpen }) {
     padding: '0 11px',
     height: `${TOOLTIP_HEIGHT}px`,
     borderRadius: '20px',
-    border: '1px solid rgba(160,138,95,0.28)',
-    background: '#fdf7eb',
-    boxShadow: '0 2px 10px rgba(80,55,15,0.14), 0 1px 3px rgba(0,0,0,0.08)',
+    border: isDark ? '1px solid rgba(245,245,240,0.2)' : '1px solid rgba(160,138,95,0.28)',
+    background: bgDefault,
+    boxShadow: isDark
+      ? '0 2px 10px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2)'
+      : '0 2px 10px rgba(80,55,15,0.14), 0 1px 3px rgba(0,0,0,0.08)',
     cursor: 'pointer',
     fontFamily: 'system-ui, -apple-system, sans-serif',
     fontSize: '12px',
     fontWeight: 500,
-    color: isHighlighted ? '#7a3a2a' : '#5a4a28',
+    color: isDark ? '#1c1c1e' : (isHighlighted ? '#7a3a2a' : '#5a4a28'),
     letterSpacing: '0.01em',
     whiteSpace: 'nowrap',
     transition: 'background 0.1s',
@@ -178,8 +183,8 @@ export function SelectionTooltip({ editorRef, prefs, quizOpen, settingsOpen }) {
           <button
             style={btnStyle}
             onMouseDown={handleRemoveClick}
-            onMouseEnter={e => { e.currentTarget.style.background = '#f5eddb' }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#fdf7eb' }}
+            onMouseEnter={e => { e.currentTarget.style.background = bgHover }}
+            onMouseLeave={e => { e.currentTarget.style.background = bgDefault }}
           >
             <span aria-hidden="true" style={{ fontSize: '11px', opacity: 0.75 }}>✕</span>
             Remove Highlight
@@ -188,8 +193,8 @@ export function SelectionTooltip({ editorRef, prefs, quizOpen, settingsOpen }) {
           <button
             style={btnStyle}
             onMouseDown={handleHighlightClick}
-            onMouseEnter={e => { e.currentTarget.style.background = '#f5eddb' }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#fdf7eb' }}
+            onMouseEnter={e => { e.currentTarget.style.background = bgHover }}
+            onMouseLeave={e => { e.currentTarget.style.background = bgDefault }}
           >
             <span aria-hidden="true" style={{ fontSize: '11px' }}>✦</span>
             Highlight

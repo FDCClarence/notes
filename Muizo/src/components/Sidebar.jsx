@@ -1,5 +1,23 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { getNoteTitle } from '../hooks/useNotes'
+
+function isValidNote(item) {
+  return (
+    item &&
+    typeof item === 'object' &&
+    !Array.isArray(item) &&
+    typeof item.id === 'string' &&
+    'content' in item
+  )
+}
+
+/** Accepts a single note (Save Notes export) or an array (full backup). */
+function normalizeNotesImport(data) {
+  if (Array.isArray(data)) {
+    return data.every(isValidNote) ? data : null
+  }
+  return isValidNote(data) ? [data] : null
+}
 
 function stripHtml(html) {
   const div = document.createElement('div')
@@ -70,8 +88,30 @@ function NoteCard({ note, isActive, onSelect, onDelete }) {
   )
 }
 
-export function Sidebar({ notes, activeId, setActiveId, createNote, deleteNote }) {
+function buildFilename(note) {
+  const title = getNoteTitle(note)
+  const words = title.trim().split(/\s+/).slice(0, 4)
+  const slug = words.join('-').toLowerCase().replace(/[^a-z0-9-]/g, '') || 'note'
+  return `${slug}-muizo.json`
+}
+
+export function Sidebar({ notes, activeId, setActiveId, createNote, deleteNote, activeNote, onImport }) {
   const [query, setQuery] = useState('')
+  const [importError, setImportError] = useState(false)
+  const fileInputRef = useRef(null)
+
+  function handleExport() {
+    if (!activeNote) return
+    const blob = new Blob([JSON.stringify(activeNote, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = buildFilename(activeNote)
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   const filtered = query.trim()
     ? notes.filter(note => {
@@ -80,6 +120,34 @@ export function Sidebar({ notes, activeId, setActiveId, createNote, deleteNote }
         return plain.includes(q)
       })
     : notes
+
+  function handleFileChange(e) {
+    const file = e.target.files?.[0]
+    // Reset so the same file can be re-selected if cancelled
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result)
+        const imported = normalizeNotesImport(data)
+        if (!imported) {
+          setImportError(true)
+          return
+        }
+        setImportError(false)
+        onImport(imported)
+      } catch {
+        setImportError(true)
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  function handleUploadClick() {
+    setImportError(false)
+    fileInputRef.current?.click()
+  }
 
   return (
     <aside className="parch-sidebar flex h-screen flex-col">
@@ -122,6 +190,66 @@ export function Sidebar({ notes, activeId, setActiveId, createNote, deleteNote }
           </li>
         )}
       </ul>
+
+      {/* ── Import / Export footer — always pinned to the bottom ── */}
+      <div
+        className="flex-shrink-0"
+        style={{
+          borderTop: '1px solid var(--parch-border-hard)',
+          padding: '8px',
+          position: 'relative',
+          zIndex: 3,
+        }}
+      >
+        {importError && (
+          <p
+            style={{
+              fontSize: '11px',
+              color: '#92400e',
+              marginBottom: '6px',
+              padding: '0 2px',
+            }}
+          >
+            Invalid notes file
+          </p>
+        )}
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <button
+            onClick={handleUploadClick}
+            className="parch-btn parch-btn-primary"
+            style={{ width: '100%', justifyContent: 'center', fontSize: '12px', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' }}
+          >
+            Upload Notes File
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={!activeNote}
+            className="parch-btn parch-btn-primary"
+            style={{
+              width: '100%',
+              justifyContent: 'center',
+              fontSize: '12px',
+              fontWeight: 500,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              opacity: activeNote ? 1 : 0.4,
+              cursor: activeNote ? 'pointer' : 'not-allowed',
+            }}
+          >
+            Save Notes
+          </button>
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+      </div>
 
       {/* Worn-edge vignette on the right border */}
       <div

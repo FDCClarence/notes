@@ -95,7 +95,7 @@ function EmptyState({ onCreateNote }) {
 
 function App() {
   const prefs = usePreferences()
-  const { notes, activeId, setActiveId, activeNote, createNote, updateNote, deleteNote } = useNotes()
+  const { notes, activeId, setActiveId, activeNote, createNote, updateNote, deleteNote, importNotes } = useNotes()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [quizOpen, setQuizOpen] = useState(false)
 
@@ -146,6 +146,8 @@ function App() {
           setActiveId={setActiveId}
           createNote={createNote}
           deleteNote={deleteNote}
+          activeNote={activeNote}
+          onImport={importNotes}
         />
       </div>
 
@@ -167,6 +169,7 @@ function App() {
         <div className="relative flex flex-1 min-h-0">
           {activeNote ? (
             <Editor
+              key={activeId}
               activeId={activeId}
               activeNote={activeNote}
               updateNote={updateNote}

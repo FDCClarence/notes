@@ -37,14 +37,16 @@ function SurfaceSwatch({ id, surface, selected, onSelect }) {
         }}
       />
 
-      {/* Label strip */}
+      {/* Label strip — inverted for dark surface so text stays legible */}
       <div
         className="absolute bottom-0 inset-x-0 text-center"
         style={{
           fontSize: '8px',
           lineHeight: '14px',
-          color: '#64748b',
-          backgroundColor: 'rgba(255,255,255,0.55)',
+          color: surface.textColor ? 'rgba(245,245,240,0.75)' : '#64748b',
+          backgroundColor: surface.textColor
+            ? 'rgba(0,0,0,0.35)'
+            : 'rgba(255,255,255,0.55)',
           backdropFilter: 'blur(2px)',
         }}
       >

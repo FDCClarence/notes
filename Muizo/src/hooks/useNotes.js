@@ -158,6 +158,22 @@ export function useNotes() {
     })
   }, [])
 
+  const importNotes = useCallback((incoming) => {
+    const now = new Date().toISOString()
+    const cloned = incoming.map(note => ({
+      ...note,
+      id: crypto.randomUUID(),
+      title: note.title ?? '',
+      content: note.content ?? '',
+      createdAt: now,
+      updatedAt: now,
+    }))
+    setNotes(prev => [...cloned, ...prev])
+    if (cloned.length > 0) {
+      setActiveId(cloned[0].id)
+    }
+  }, [])
+
   const activeNote = notes.find(n => n.id === activeId) ?? null
 
   return {
@@ -168,5 +184,6 @@ export function useNotes() {
     createNote,
     updateNote,
     deleteNote,
+    importNotes,
   }
 }

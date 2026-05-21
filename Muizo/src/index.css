@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Bright highlight swatches need dark ink on the dark paper surface */
+.editor--dark span[style*='background-color']:not([style*='transparent']),
+.editor--dark font[style*='background-color']:not([style*='transparent']) {
+  color: #1c1c1e !important;
+}

@@ -38,6 +38,16 @@ export const surfaces = {
     paddingLeft: '24px',
     outline: '1.5px dashed #C4B9AA',
   },
+  dark: {
+    label: 'Dark',
+    bg: '#3c3c3e',
+    rule: '#525255',
+    textColor: '#f5f5f0',
+    borderLeft: null,
+    borderTop: null,
+    paddingLeft: '24px',
+    outline: null,
+  },
 }
 
 export const fonts = [
