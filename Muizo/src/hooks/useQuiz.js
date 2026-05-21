@@ -13,6 +13,14 @@ Rules:
 
 const MIN_NOTE_CHARS = 24
 
+export const ANTHROPIC_KEY_STORAGE = 'muizo_anthropic_key'
+
+export function getAnthropicApiKey() {
+  const stored = localStorage.getItem(ANTHROPIC_KEY_STORAGE)
+  if (stored) return stored
+  return import.meta.env.VITE_ANTHROPIC_API_KEY || ''
+}
+
 function stripHtml(html) {
   if (!html) return ''
   const el = document.createElement('div')
@@ -76,7 +84,7 @@ export function useQuiz() {
   const [error, setError] = useState(null) // { code: string, message: string } | null
 
   const generate = useCallback(async (htmlContent) => {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
+    const apiKey = getAnthropicApiKey()
 
     if (!apiKey) {
       setError({ code: 'missing_key', message: 'missing_key' })

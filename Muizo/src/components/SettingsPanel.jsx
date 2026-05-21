@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { surfaces, fonts, tools, inkColors } from '../config/themes'
+import { ANTHROPIC_KEY_STORAGE } from '../hooks/useQuiz'
 
 // ─── Surface thumbnail ────────────────────────────────────────────────────────
 
@@ -100,6 +101,19 @@ function FontCard({ font, selected, onSelect }) {
 
 export function SettingsPanel({ open, onClose, prefs, setPref }) {
   const panelRef = useRef(null)
+  const [hasStoredKey, setHasStoredKey] = useState(() => !!localStorage.getItem(ANTHROPIC_KEY_STORAGE))
+  const [keyRemovedMsg, setKeyRemovedMsg] = useState(false)
+
+  useEffect(() => {
+    if (open) setHasStoredKey(!!localStorage.getItem(ANTHROPIC_KEY_STORAGE))
+  }, [open])
+
+  function handleForgetKey() {
+    localStorage.removeItem(ANTHROPIC_KEY_STORAGE)
+    setHasStoredKey(false)
+    setKeyRemovedMsg(true)
+    setTimeout(() => setKeyRemovedMsg(false), 2000)
+  }
 
   // Close on outside click — but ignore the gear toggle button
   useEffect(() => {
@@ -270,6 +284,28 @@ export function SettingsPanel({ open, onClose, prefs, setPref }) {
         </section>
 
       </div>
+
+      {(hasStoredKey || keyRemovedMsg) && (
+        <div
+          className="shrink-0 border-t px-5 py-4 flex flex-col items-center gap-2"
+          style={{ borderColor: 'var(--parch-border)' }}
+        >
+          {keyRemovedMsg && (
+            <p className="text-xs parch-text-mid" style={{ opacity: 0.85 }}>
+              Key removed
+            </p>
+          )}
+          {hasStoredKey && (
+            <button
+              type="button"
+              onClick={handleForgetKey}
+              className="text-xs parch-text-faint hover:text-[var(--parch-mid)] transition-colors focus:outline-none"
+            >
+              Forget API key
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

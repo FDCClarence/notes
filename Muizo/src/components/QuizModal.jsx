@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useQuiz } from '../hooks/useQuiz'
+import { useQuiz, ANTHROPIC_KEY_STORAGE } from '../hooks/useQuiz'
 
 // Parchment palette (matches src/styles/parchment.css)
 const P = {
@@ -76,24 +76,89 @@ function Skeleton() {
   )
 }
 
+// ─── API key input ────────────────────────────────────────────────────────────
+
+function KeyInputView({ onSave, onClose }) {
+  const [key, setKey] = useState('')
+
+  function handleSave() {
+    const trimmed = key.trim()
+    if (!trimmed) return
+    localStorage.setItem(ANTHROPIC_KEY_STORAGE, trimmed)
+    onSave()
+  }
+
+  return (
+    <div className="flex flex-col gap-5 py-4">
+      <div
+        className="flex h-14 w-14 items-center justify-center rounded-full mx-auto"
+        style={{ background: P.warnBg }}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={P.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      </div>
+
+      <div className="text-center" style={{ maxWidth: '340px', margin: '0 auto' }}>
+        <p className="text-base font-semibold parch-text">Anthropic API key</p>
+        <p className="mt-2 text-sm leading-relaxed parch-text-mid">
+          Enter your Anthropic API key to use the quiz feature. It&apos;s stored only in your browser.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <input
+          type="password"
+          value={key}
+          onChange={e => setKey(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
+          placeholder="sk-ant-…"
+          autoComplete="off"
+          className="parch-input w-full rounded-xl px-4 py-3 text-sm transition-shadow focus:outline-none"
+        />
+        <a
+          href="https://console.anthropic.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-center text-xs parch-text-faint hover:underline"
+          style={{ color: P.mid }}
+        >
+          Get a key at console.anthropic.com
+        </a>
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          onClick={handleSave}
+          disabled={!key.trim()}
+          className="parch-btn-primary flex-1 rounded-lg py-2.5 text-sm font-medium transition-opacity focus:outline-none disabled:opacity-50"
+        >
+          Save &amp; Continue
+        </button>
+        <button
+          onClick={onClose}
+          className="parch-btn rounded-lg px-4 py-2.5 text-sm font-medium focus:outline-none"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Error view ───────────────────────────────────────────────────────────────
 
 function ErrorView({ error, onRetry, onClose }) {
-  const isMissingKey = error?.code === 'missing_key'
   const isEmpty = error?.code === 'empty_note'
 
   return (
     <div className="flex flex-col items-center gap-5 py-6 text-center">
       <div
         className="flex h-14 w-14 items-center justify-center rounded-full"
-        style={{ background: isMissingKey ? P.warnBg : P.errorBg }}
+        style={{ background: isEmpty ? P.muted : P.errorBg }}
       >
-        {isMissingKey ? (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={P.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        ) : isEmpty ? (
+        {isEmpty ? (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={P.faint} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
@@ -109,29 +174,17 @@ function ErrorView({ error, onRetry, onClose }) {
 
       <div style={{ maxWidth: '300px' }}>
         <p className="text-base font-semibold parch-text">
-          {isMissingKey
-            ? 'API key not found'
-            : isEmpty
-            ? 'Nothing to quiz on yet'
-            : 'Something went wrong'}
+          {isEmpty ? 'Nothing to quiz on yet' : 'Something went wrong'}
         </p>
         <p className="mt-2 text-sm leading-relaxed parch-text-mid">
-          {isMissingKey ? (
-            <>
-              Add <code className="rounded px-1 py-0.5 text-xs parch-text" style={{ background: P.muted }}>VITE_ANTHROPIC_API_KEY</code> to a{' '}
-              <code className="rounded px-1 py-0.5 text-xs parch-text" style={{ background: P.muted }}>.env</code> file
-              in the Muizo directory, then restart the dev server.
-            </>
-          ) : isEmpty ? (
-            'Write some notes first, then open the quiz to generate questions.'
-          ) : (
-            error?.message
-          )}
+          {isEmpty
+            ? 'Write some notes first, then open the quiz to generate questions.'
+            : error?.message}
         </p>
       </div>
 
       <div className="flex gap-3">
-        {!isEmpty && !isMissingKey && (
+        {!isEmpty && (
           <button
             onClick={onRetry}
             className="parch-btn-primary rounded-lg px-4 py-2 text-sm font-medium focus:outline-none"
@@ -548,7 +601,11 @@ export function QuizModal({ open, onClose, activeNote }) {
           <div className="flex-1 overflow-y-auto px-6 py-5">
             {status === 'loading' && <Skeleton />}
 
-            {status === 'error' && (
+            {status === 'error' && error?.code === 'missing_key' && (
+              <KeyInputView onSave={handleRetry} onClose={handleClose} />
+            )}
+
+            {status === 'error' && error?.code !== 'missing_key' && (
               <ErrorView error={error} onRetry={handleRetry} onClose={handleClose} />
             )}
 
