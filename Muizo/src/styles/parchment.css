@@ -278,6 +278,28 @@
   color: var(--parch-faint);
 }
 
+/* ── Napkin surface pseudo-element background ────────────────────────────────── */
+/*
+ * The napkin PNG is pinned as a ::before pseudo-element so it always renders
+ * at its natural proportions (contain), centered, and never stretches with the
+ * container.  All real content sits at z-index ≥ 1 on top of it.
+ */
+.napkin-surface {
+  position: relative !important;
+}
+
+.napkin-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/assets/napkin.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* ── Text utilities ──────────────────────────────────────────────────────────── */
 .parch-text       { color: var(--parch-dark); }
 .parch-text-mid   { color: var(--parch-mid); }

@@ -12,9 +12,12 @@ function isContentEmpty(html) {
   return !(div.textContent || '').trim()
 }
 
-// paddingTop must be a multiple of GRID so that the background rule lines
-// land at the bottom of each text row rather than cutting through the middle.
-const PADDING_TOP = GRID // 36px — first rule falls exactly at the end of line 1
+// FADE_TOP: height of the top fade zone; contentEditable paddingTop matches so
+// the first text line begins exactly where the mask becomes fully opaque.
+// backgroundPosition-y is also set to FADE_TOP so rule lines land at the
+// bottom of each text row (FADE_TOP + GRID - 1 = bottom of line 1).
+const FADE_TOP = 40
+const FADE_BOTTOM = 48
 
 function inkWithOpacity(hex, opacity) {
   if (opacity >= 1) return hex
@@ -42,37 +45,44 @@ export function Editor({ activeId, activeNote, updateNote, prefs, quizOpen = fal
   const rulePos = GRID - 1
   const isNapkin = prefs.surface === 'napkin'
 
+  const maskGradient = `linear-gradient(to bottom, transparent 0px, black ${FADE_TOP}px, black calc(100% - ${FADE_BOTTOM}px), transparent 100%)`
+
   const paperStyle = {
     backgroundColor: surface.bg,
-    backgroundImage: surface.bgImage
-      ? surface.bgImage
-      : surface.rule
-        ? `repeating-linear-gradient(
-          to bottom,
-          transparent 0px,
-          transparent ${rulePos}px,
-          ${ruleColor} ${rulePos}px,
-          ${ruleColor} ${GRID}px
-        )`
-        : 'none',
-    backgroundSize: surface.bgImage ? surface.bgSize : `100% ${GRID}px`,
-    backgroundPosition: surface.bgImage ? surface.bgPosition : `0 ${PADDING_TOP}px`,
-    backgroundRepeat: surface.bgImage ? surface.bgRepeat : undefined,
+    ...(surface.bgImage
+      ? {
+          backgroundImage: surface.bgImage,
+          backgroundSize: surface.bgSize,
+          backgroundPosition: surface.bgPosition,
+          backgroundRepeat: surface.bgRepeat,
+        }
+      : {}),
     borderLeft: surface.borderLeft ?? 'none',
     borderTop: surface.borderTop ?? 'none',
     outline: surface.outline ?? 'none',
     paddingLeft: surface.paddingLeft ?? '24px',
     paddingRight: '32px',
-    paddingTop: `${PADDING_TOP}px`,
-    paddingBottom: `${GRID * 4}px`,
+    // vertical padding lives on the contentEditable (matches fade distances)
     transform: isNapkin ? 'rotate(0.4deg)' : 'none',
+    flex: 1,
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    boxSizing: 'border-box',
+    width: '100%',
+    transition: 'background-color 200ms ease, transform 200ms ease',
+  }
+
+  const scrollStyle = {
     flex: 1,
     minHeight: 0,
     overflowY: 'auto',
     overflowX: 'hidden',
-    boxSizing: 'border-box',
-    width: '100%',
-    transition: 'background-color 200ms ease, transform 200ms ease',
+    maskImage: maskGradient,
+    WebkitMaskImage: maskGradient,
+    // Sit above the ::before napkin pseudo-element (z-index: 0)
+    position: 'relative',
+    zIndex: 1,
   }
 
   const textStyle = {
@@ -89,6 +99,26 @@ export function Editor({ activeId, activeNote, updateNote, prefs, quizOpen = fal
     outline: 'none',
     minHeight: '100%',
     transition: 'color 200ms ease',
+    // Vertical padding lives here so it scrolls with the content.
+    // FADE_TOP/FADE_BOTTOM match the mask fade distances so text never sits
+    // in the fully-transparent zone at the edges of the scroll container.
+    paddingTop: `${FADE_TOP}px`,
+    paddingBottom: `${GRID * 4}px`,
+    // Ruled lines on the contentEditable scroll with the text; napkin texture
+    // is on the outer paper container so it stays fixed in the viewport.
+    backgroundImage: surface.rule
+      ? `repeating-linear-gradient(
+          to bottom,
+          transparent 0px,
+          transparent ${rulePos}px,
+          ${ruleColor} ${rulePos}px,
+          ${ruleColor} ${GRID}px
+        )`
+      : 'none',
+    backgroundSize: surface.rule ? `100% ${GRID}px` : undefined,
+    // Offset by FADE_TOP so the first rule lands at the bottom of line 1:
+    // FADE_TOP + (GRID - 1) = bottom of the first text row.
+    backgroundPosition: surface.rule ? `0 ${FADE_TOP}px` : undefined,
   }
 
   // On mount: set initial content
@@ -129,7 +159,7 @@ export function Editor({ activeId, activeNote, updateNote, prefs, quizOpen = fal
 
   const prefixStyle = {
     position: 'absolute',
-    top: 0,
+    top: FADE_TOP,
     left: 0,
     lineHeight: `${GRID}px`,
     fontSize: textStyle.fontSize,
@@ -149,45 +179,47 @@ export function Editor({ activeId, activeNote, updateNote, prefs, quizOpen = fal
   }
 
   return (
-    <div style={paperStyle}>
+    <div style={paperStyle} className={isNapkin ? 'napkin-surface' : undefined}>
       <SelectionTooltip
         editorRef={editorRef}
         prefs={prefs}
         quizOpen={quizOpen}
         settingsOpen={settingsOpen}
       />
-      <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-        <span ref={prefixRef} className="editor-title-prefix" aria-hidden="true" style={prefixStyle}>
-          {TOPIC_PREFIX}
-        </span>
-        {showPlaceholder && (
+      <div style={scrollStyle}>
+        <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <span ref={prefixRef} className="editor-title-prefix" aria-hidden="true" style={prefixStyle}>
+            {TOPIC_PREFIX}
+          </span>
+          {showPlaceholder && (
+            <div
+              className="editor-title-placeholder"
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                top: FADE_TOP,
+                left: prefixWidth,
+                right: 0,
+                lineHeight: `${GRID}px`,
+                fontSize: textStyle.fontSize,
+                fontFamily: textStyle.fontFamily,
+                letterSpacing: textStyle.letterSpacing,
+              }}
+            >
+              {TOPIC_PLACEHOLDER}
+            </div>
+          )}
           <div
-            className="editor-title-placeholder"
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: prefixWidth,
-              right: 0,
-              lineHeight: `${GRID}px`,
-              fontSize: textStyle.fontSize,
-              fontFamily: textStyle.fontFamily,
-              letterSpacing: textStyle.letterSpacing,
-            }}
-          >
-            {TOPIC_PLACEHOLDER}
-          </div>
-        )}
-        <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          onInput={handleInput}
-          style={editorWithIndent}
-          spellCheck={false}
-          translate="no"
-          data-testid="editor"
-        />
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handleInput}
+            style={editorWithIndent}
+            spellCheck={false}
+            translate="no"
+            data-testid="editor"
+          />
+        </div>
       </div>
     </div>
   )

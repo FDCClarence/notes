@@ -30,11 +30,8 @@ export const surfaces = {
   },
   napkin: {
     label: 'Napkin',
-    bg: 'transparent',
-    bgImage: "url('/assets/napkin.png')",
-    bgSize: 'cover',
-    bgPosition: 'center',
-    bgRepeat: 'no-repeat',
+    hidden: true,
+    bg: '#fdfaf4',
     rule: null,
     borderLeft: null,
     borderTop: null,

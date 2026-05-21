@@ -16,6 +16,7 @@ function loadPrefs() {
     const raw = localStorage.getItem(STORAGE_KEY)
     const prefs = raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS }
     if (prefs.highlightColor === 'none') prefs.highlightColor = 'yellow'
+    if (prefs.surface === 'napkin') prefs.surface = DEFAULTS.surface
     return prefs
   } catch {
     return { ...DEFAULTS }

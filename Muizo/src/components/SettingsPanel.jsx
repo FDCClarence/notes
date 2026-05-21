@@ -161,7 +161,9 @@ export function SettingsPanel({ open, onClose, prefs, setPref }) {
         <section className="mb-6">
           <SectionLabel>Writing surface</SectionLabel>
           <div className="flex gap-2">
-            {Object.entries(surfaces).map(([id, surface]) => (
+            {Object.entries(surfaces)
+              .filter(([, surface]) => !surface.hidden)
+              .map(([id, surface]) => (
               <SurfaceSwatch
                 key={id}
                 id={id}
