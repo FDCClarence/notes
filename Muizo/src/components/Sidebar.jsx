@@ -1,16 +1,10 @@
 import { useState } from 'react'
+import { getNoteTitle } from '../hooks/useNotes'
 
 function stripHtml(html) {
   const div = document.createElement('div')
   div.innerHTML = html
   return div.textContent || div.innerText || ''
-}
-
-function getNoteTitle(content) {
-  const plain = stripHtml(content)
-  const firstLine = plain.split('\n')[0].trim()
-  if (!firstLine) return 'Untitled'
-  return firstLine.length > 30 ? firstLine.slice(0, 30) + '\u2026' : firstLine
 }
 
 function formatDate(isoString) {
@@ -61,7 +55,7 @@ function NoteCard({ note, isActive, onSelect, onDelete }) {
     >
       <div className="flex items-center gap-2">
         <span className="parch-text truncate text-sm font-medium leading-snug">
-          {getNoteTitle(note.content)}
+          {getNoteTitle(note)}
         </span>
         <button
           onClick={onDelete}
@@ -88,10 +82,7 @@ export function Sidebar({ notes, activeId, setActiveId, createNote, deleteNote }
     : notes
 
   return (
-    <aside
-      style={{ width: 240, minWidth: 240 }}
-      className="parch-sidebar flex h-screen flex-col"
-    >
+    <aside className="parch-sidebar flex h-screen flex-col">
       <div className="p-3 border-b border-slate-100">
         <button
           onClick={createNote}

@@ -1,5 +1,16 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, useState, useLayoutEffect } from 'react'
 import { GRID, surfaces, fonts, tools, inkColors } from '../config/themes'
+import { SelectionTooltip } from './SelectionTooltip'
+
+export const TOPIC_PREFIX = 'Topic : '
+const TOPIC_PLACEHOLDER = 'Add a topic\u2026'
+
+function isContentEmpty(html) {
+  if (!html || html === '<br>') return true
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return !(div.textContent || '').trim()
+}
 
 // paddingTop must be a multiple of GRID so that the background rule lines
 // land at the bottom of each text row rather than cutting through the middle.
@@ -13,9 +24,14 @@ function inkWithOpacity(hex, opacity) {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`
 }
 
-export function Editor({ activeId, activeNote, updateNote, prefs }) {
+export function Editor({ activeId, activeNote, updateNote, prefs, quizOpen = false, settingsOpen = false }) {
   const editorRef = useRef(null)
+  const prefixRef = useRef(null)
   const isInternalUpdate = useRef(false)
+  const [prefixWidth, setPrefixWidth] = useState(0)
+  const [showPlaceholder, setShowPlaceholder] = useState(() =>
+    isContentEmpty(activeNote?.content),
+  )
 
   const surface = surfaces[prefs.surface] ?? surfaces.yellow
   const font = fonts.find(f => f.id === prefs.font) ?? fonts[0]
@@ -28,17 +44,20 @@ export function Editor({ activeId, activeNote, updateNote, prefs }) {
 
   const paperStyle = {
     backgroundColor: surface.bg,
-    backgroundImage: surface.rule
-      ? `repeating-linear-gradient(
+    backgroundImage: surface.bgImage
+      ? surface.bgImage
+      : surface.rule
+        ? `repeating-linear-gradient(
           to bottom,
           transparent 0px,
           transparent ${rulePos}px,
           ${ruleColor} ${rulePos}px,
           ${ruleColor} ${GRID}px
         )`
-      : 'none',
-    backgroundSize: `100% ${GRID}px`,
-    backgroundPosition: `0 ${PADDING_TOP}px`,
+        : 'none',
+    backgroundSize: surface.bgImage ? surface.bgSize : `100% ${GRID}px`,
+    backgroundPosition: surface.bgImage ? surface.bgPosition : `0 ${PADDING_TOP}px`,
+    backgroundRepeat: surface.bgImage ? surface.bgRepeat : undefined,
     borderLeft: surface.borderLeft ?? 'none',
     borderTop: surface.borderTop ?? 'none',
     outline: surface.outline ?? 'none',
@@ -76,6 +95,7 @@ export function Editor({ activeId, activeNote, updateNote, prefs }) {
   useEffect(() => {
     if (editorRef.current && activeNote) {
       editorRef.current.innerHTML = activeNote.content ?? ''
+      setShowPlaceholder(isContentEmpty(activeNote.content))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -86,29 +106,89 @@ export function Editor({ activeId, activeNote, updateNote, prefs }) {
     isInternalUpdate.current = true
     editorRef.current.innerHTML = activeNote?.content ?? ''
     isInternalUpdate.current = false
+    setShowPlaceholder(isContentEmpty(activeNote?.content))
   }, [activeId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleInput = useCallback(
     e => {
       if (isInternalUpdate.current) return
+      const html = e.target.innerHTML
+      setShowPlaceholder(isContentEmpty(html))
       if (activeId) {
-        updateNote(activeId, { content: e.target.innerHTML })
+        updateNote(activeId, { content: html })
       }
     },
     [activeId, updateNote],
   )
 
+  useLayoutEffect(() => {
+    if (prefixRef.current) {
+      setPrefixWidth(prefixRef.current.offsetWidth)
+    }
+  }, [font.id, tool.id, inkColor.id, prefs.surface])
+
+  const prefixStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    lineHeight: `${GRID}px`,
+    fontSize: textStyle.fontSize,
+    fontFamily: textStyle.fontFamily,
+    fontWeight: textStyle.fontWeight,
+    fontStyle: textStyle.fontStyle,
+    letterSpacing: textStyle.letterSpacing,
+    color: textStyle.color,
+    filter: textStyle.filter,
+    pointerEvents: 'none',
+    userSelect: 'none',
+  }
+
+  const editorWithIndent = {
+    ...textStyle,
+    textIndent: prefixWidth > 0 ? `${prefixWidth}px` : undefined,
+  }
+
   return (
     <div style={paperStyle}>
-      <div
-        ref={editorRef}
-        contentEditable
-        suppressContentEditableWarning
-        onInput={handleInput}
-        style={textStyle}
-        spellCheck={false}
-        data-testid="editor"
+      <SelectionTooltip
+        editorRef={editorRef}
+        prefs={prefs}
+        quizOpen={quizOpen}
+        settingsOpen={settingsOpen}
       />
+      <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <span ref={prefixRef} className="editor-title-prefix" aria-hidden="true" style={prefixStyle}>
+          {TOPIC_PREFIX}
+        </span>
+        {showPlaceholder && (
+          <div
+            className="editor-title-placeholder"
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: prefixWidth,
+              right: 0,
+              lineHeight: `${GRID}px`,
+              fontSize: textStyle.fontSize,
+              fontFamily: textStyle.fontFamily,
+              letterSpacing: textStyle.letterSpacing,
+            }}
+          >
+            {TOPIC_PLACEHOLDER}
+          </div>
+        )}
+        <div
+          ref={editorRef}
+          contentEditable
+          suppressContentEditableWarning
+          onInput={handleInput}
+          style={editorWithIndent}
+          spellCheck={false}
+          translate="no"
+          data-testid="editor"
+        />
+      </div>
     </div>
   )
 }

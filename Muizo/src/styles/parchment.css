@@ -9,6 +9,13 @@
   --parch-active:      rgba(100, 70, 30, 0.15);
   --parch-border:      rgba(100, 70, 30, 0.20);
   --parch-border-hard: #B8A07A;
+  --parch-chrome-mid:  color-mix(in srgb, #C8B48C 50%, #D9C9A8 50%);
+  --parch-empty-bg:    color-mix(in srgb, var(--parch-chrome-mid) 20%, #ffffff);
+}
+
+/* ── Empty state (no notes yet) ─────────────────────────────────────────────── */
+.parch-empty {
+  background-color: var(--parch-empty-bg);
 }
 
 /* ── Texture regions — base position ───────────────────────────────────────── */
@@ -31,6 +38,126 @@
   border-bottom: 1px solid var(--parch-border-hard);
 }
 
+.parch-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-right: 4px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: rgba(100, 70, 30, 0.06);
+  color: var(--parch-mid);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.parch-sidebar-toggle:hover {
+  background: var(--parch-hover);
+  color: var(--parch-dark);
+}
+
+.parch-sidebar-toggle:focus-visible {
+  outline: 2px solid var(--parch-accent);
+  outline-offset: 1px;
+}
+
+.parch-quiz-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-right: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--parch-border);
+  border-radius: 6px;
+  background: var(--parch-active);
+  color: var(--parch-dark);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.parch-quiz-btn:hover:not(:disabled) {
+  background: rgba(100, 70, 30, 0.22);
+  border-color: var(--parch-border-hard);
+  color: var(--parch-accent-dark);
+}
+
+.parch-quiz-btn:focus-visible {
+  outline: 2px solid var(--parch-accent);
+  outline-offset: 1px;
+}
+
+.parch-quiz-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.parch-highlight-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--parch-border);
+  border-radius: 6px;
+  background: var(--parch-active);
+  color: var(--parch-dark);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.parch-highlight-btn:hover {
+  background: rgba(100, 70, 30, 0.22);
+  border-color: var(--parch-border-hard);
+  color: var(--parch-accent-dark);
+}
+
+.parch-highlight-btn:focus-visible {
+  outline: 2px solid var(--parch-accent);
+  outline-offset: 1px;
+}
+
+.parch-highlight-btn[aria-expanded='true'] {
+  background: rgba(100, 70, 30, 0.22);
+  border-color: var(--parch-border-hard);
+  color: var(--parch-accent-dark);
+}
+
+.parch-highlight-btn__swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: background-color 0.15s;
+}
+
+.parch-topbar-actions {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.parch-topbar-actions--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .parch-topbar::before {
   content: '';
   position: absolute;
@@ -43,10 +170,34 @@
   background-repeat: repeat;
 }
 
+/* ── Sidebar collapse shell ─────────────────────────────────────────────────── */
+.parch-sidebar-wrap {
+  flex: 0 0 auto;
+  width: 240px;
+  min-width: 240px;
+  overflow: hidden;
+  transition: width 200ms ease, min-width 200ms ease;
+}
+
+.parch-sidebar-wrap--collapsed {
+  width: 0;
+  min-width: 0;
+}
+
 /* ── Region: sidebar ────────────────────────────────────────────────────────── */
 .parch-sidebar {
+  width: 240px;
+  min-width: 240px;
+  flex-shrink: 0;
+  transform: translateX(0);
+  transition: transform 200ms ease;
   background-color: #D9C9A8;
   border-right: 1px solid var(--parch-border-hard);
+}
+
+.parch-sidebar-wrap--collapsed .parch-sidebar {
+  transform: translateX(-100%);
+  border-right-color: transparent;
 }
 
 .parch-sidebar::before {
@@ -131,6 +282,19 @@
 .parch-text       { color: var(--parch-dark); }
 .parch-text-mid   { color: var(--parch-mid); }
 .parch-text-faint { color: var(--parch-faint); }
+
+/* Editor: fixed first-line label + title hint (not stored in note HTML) */
+.editor-title-prefix {
+  user-select: none;
+}
+
+.editor-title-placeholder {
+  color: var(--parch-faint);
+  font-style: italic;
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
 
 /* ── Note list item ──────────────────────────────────────────────────────────── */
 .parch-note-item {

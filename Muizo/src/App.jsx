@@ -8,171 +8,11 @@ import { QuizModal } from './components/QuizModal'
 import { usePreferences } from './hooks/usePreferences'
 import { useNotes } from './hooks/useNotes'
 
-// Absolutely-positioned napkin texture overlays: crinkle corners, ketchup
-// blobs, and grease smears. Shown only when surface === 'napkin'.
-function NapkinOverlay() {
-  return (
-    <div
-      className="absolute inset-0 pointer-events-none overflow-hidden"
-      aria-hidden="true"
-      style={{ zIndex: 2 }}
-    >
-      {/* ── Crinkle corners ───────────────────────────────────────────── */}
-      {/* top-left */}
-      <svg
-        className="absolute top-0 left-0"
-        width="90"
-        height="90"
-        viewBox="0 0 90 90"
-      >
-        <path d="M0,0 L48,18 L18,48 Z" fill="rgba(175,158,135,0.18)" />
-        <line x1="0" y1="0" x2="48" y2="18" stroke="rgba(150,130,105,0.28)" strokeWidth="0.8" />
-        <line x1="0" y1="0" x2="18" y2="48" stroke="rgba(150,130,105,0.28)" strokeWidth="0.8" />
-        <line x1="22" y1="0" x2="48" y2="22" stroke="rgba(150,130,105,0.15)" strokeWidth="0.5" />
-      </svg>
-
-      {/* top-right */}
-      <svg
-        className="absolute top-0 right-0"
-        width="90"
-        height="90"
-        viewBox="0 0 90 90"
-      >
-        <path d="M90,0 L42,20 L72,50 Z" fill="rgba(175,158,135,0.15)" />
-        <line x1="90" y1="0" x2="42" y2="20" stroke="rgba(150,130,105,0.24)" strokeWidth="0.8" />
-        <line x1="90" y1="0" x2="72" y2="50" stroke="rgba(150,130,105,0.24)" strokeWidth="0.8" />
-      </svg>
-
-      {/* bottom-left */}
-      <svg
-        className="absolute bottom-0 left-0"
-        width="70"
-        height="70"
-        viewBox="0 0 70 70"
-      >
-        <path d="M0,70 L35,52 L18,28 Z" fill="rgba(175,158,135,0.13)" />
-        <line x1="0" y1="70" x2="35" y2="52" stroke="rgba(150,130,105,0.22)" strokeWidth="0.8" />
-        <line x1="0" y1="70" x2="18" y2="28" stroke="rgba(150,130,105,0.22)" strokeWidth="0.8" />
-      </svg>
-
-      {/* bottom-right */}
-      <svg
-        className="absolute bottom-0 right-0"
-        width="70"
-        height="70"
-        viewBox="0 0 70 70"
-      >
-        <path d="M70,70 L38,50 L55,25 Z" fill="rgba(175,158,135,0.13)" />
-        <line x1="70" y1="70" x2="38" y2="50" stroke="rgba(150,130,105,0.22)" strokeWidth="0.8" />
-        <line x1="70" y1="70" x2="55" y2="25" stroke="rgba(150,130,105,0.22)" strokeWidth="0.8" />
-      </svg>
-
-      {/* ── Ketchup blobs ─────────────────────────────────────────────── */}
-      {/* primary blob, upper-right quadrant */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '18%',
-          right: '12%',
-          width: '32px',
-          height: '24px',
-          backgroundColor: 'rgba(178, 44, 32, 0.16)',
-          borderRadius: '62% 38% 55% 45% / 44% 56% 38% 62%',
-          transform: 'rotate(12deg)',
-        }}
-      />
-      {/* small satellite blob */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '21%',
-          right: '10%',
-          width: '14px',
-          height: '11px',
-          backgroundColor: 'rgba(178, 44, 32, 0.12)',
-          borderRadius: '55% 45% 60% 40% / 50% 50% 50% 50%',
-          transform: 'rotate(-8deg)',
-        }}
-      />
-      {/* tiny splatter dot */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '16%',
-          right: '14%',
-          width: '6px',
-          height: '6px',
-          backgroundColor: 'rgba(178, 44, 32, 0.14)',
-          borderRadius: '50%',
-        }}
-      />
-
-      {/* second ketchup spot, lower-left */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '22%',
-          left: '16%',
-          width: '20px',
-          height: '16px',
-          backgroundColor: 'rgba(165, 38, 28, 0.12)',
-          borderRadius: '50% 50% 44% 56% / 56% 44% 56% 44%',
-          transform: 'rotate(-20deg)',
-        }}
-      />
-
-      {/* ── Grease smears ─────────────────────────────────────────────── */}
-      {/* long diagonal smear, centre-left */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '42%',
-          left: '8%',
-          width: '80px',
-          height: '10px',
-          backgroundColor: 'rgba(210, 188, 130, 0.20)',
-          borderRadius: '50%',
-          transform: 'rotate(-10deg)',
-          filter: 'blur(2px)',
-        }}
-      />
-      {/* short smear, lower-right */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '35%',
-          right: '18%',
-          width: '52px',
-          height: '8px',
-          backgroundColor: 'rgba(215, 192, 135, 0.18)',
-          borderRadius: '50%',
-          transform: 'rotate(6deg)',
-          filter: 'blur(1.5px)',
-        }}
-      />
-      {/* faint wide smear, near top */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '8%',
-          left: '30%',
-          width: '110px',
-          height: '7px',
-          backgroundColor: 'rgba(205, 182, 122, 0.13)',
-          borderRadius: '50%',
-          transform: 'rotate(2deg)',
-          filter: 'blur(2px)',
-        }}
-      />
-    </div>
-  )
-}
-
 // ── Empty-state illustration ──────────────────────────────────────────────────
 function EmptyState({ onCreateNote }) {
   return (
     <div
-      className="flex flex-1 flex-col items-center justify-center select-none"
+      className="parch-empty flex flex-1 flex-col items-center justify-center select-none"
       style={{ zIndex: 3, position: 'relative', gap: '20px' }}
     >
       {/* Pencil + notepad illustration */}
@@ -259,7 +99,7 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [quizOpen, setQuizOpen] = useState(false)
 
-  const isNapkin = prefs.surface === 'napkin'
+  const isSidebarOpen = prefs.sidebarOpen !== false
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────────────
   const downloadJSON = useCallback(() => {
@@ -295,20 +135,27 @@ function App() {
       {/* Hidden SVG filter defs — rendered once, outside content flow */}
       <GlobalFilters />
 
-      {/* ── Sidebar ───────────────────────────────────────────────────── */}
-      <Sidebar
-        notes={notes}
-        activeId={activeId}
-        setActiveId={setActiveId}
-        createNote={createNote}
-        deleteNote={deleteNote}
-      />
+      {/* ── Sidebar (stays mounted; shell animates width) ─────────────── */}
+      <div
+        className={`parch-sidebar-wrap${isSidebarOpen ? '' : ' parch-sidebar-wrap--collapsed'}`}
+        aria-hidden={!isSidebarOpen}
+      >
+        <Sidebar
+          notes={notes}
+          activeId={activeId}
+          setActiveId={setActiveId}
+          createNote={createNote}
+          deleteNote={deleteNote}
+        />
+      </div>
 
       {/* ── Main area ─────────────────────────────────────────────────── */}
       <div className="flex flex-col flex-1 min-w-0">
 
         {/* Toolbar always on top */}
         <Toolbar
+          sidebarOpen={isSidebarOpen}
+          onToggleSidebar={() => prefs.setPref('sidebarOpen', !isSidebarOpen)}
           onToggleSettings={() => setIsSettingsOpen(o => !o)}
           settingsOpen={isSettingsOpen}
           onOpenQuiz={() => setQuizOpen(true)}
@@ -317,16 +164,15 @@ function App() {
           setPref={prefs.setPref}
         />
 
-        {/* Editor area — relative so the napkin overlay stays contained */}
         <div className="relative flex flex-1 min-h-0">
-          {isNapkin && <NapkinOverlay />}
-
           {activeNote ? (
             <Editor
               activeId={activeId}
               activeNote={activeNote}
               updateNote={updateNote}
               prefs={prefs}
+              quizOpen={quizOpen}
+              settingsOpen={isSettingsOpen}
             />
           ) : notes.length === 0 ? (
             <EmptyState onCreateNote={createNote} />

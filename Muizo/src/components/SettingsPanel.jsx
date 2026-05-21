@@ -4,8 +4,6 @@ import { surfaces, fonts, tools, inkColors } from '../config/themes'
 // ─── Surface thumbnail ────────────────────────────────────────────────────────
 
 function SurfaceSwatch({ id, surface, selected, onSelect }) {
-  const isNapkin = id === 'napkin'
-
   return (
     <button
       onClick={() => onSelect(id)}
@@ -24,64 +22,20 @@ function SurfaceSwatch({ id, surface, selected, onSelect }) {
         className="absolute inset-0"
         style={{
           backgroundColor: surface.bg,
-          backgroundImage: surface.rule
-            ? `repeating-linear-gradient(to bottom, transparent 0px, transparent 9px, ${surface.rule} 9px, ${surface.rule} 10px)`
-            : 'none',
-          backgroundSize: '100% 10px',
+          backgroundImage: surface.bgImage
+            ? surface.bgImage
+            : surface.rule
+              ? `repeating-linear-gradient(to bottom, transparent 0px, transparent 9px, ${surface.rule} 9px, ${surface.rule} 10px)`
+              : 'none',
+          backgroundSize: surface.bgImage ? surface.bgSize : '100% 10px',
+          backgroundPosition: surface.bgImage ? surface.bgPosition : undefined,
+          backgroundRepeat: surface.bgImage ? surface.bgRepeat : undefined,
           borderLeft: surface.borderLeft ?? undefined,
           borderTop: surface.borderTop ?? undefined,
           outline: surface.outline ?? undefined,
           outlineOffset: '-1.5px',
         }}
       />
-
-      {isNapkin && (
-        <>
-          {/* Faint "M" watermark */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
-            style={{
-              fontFamily: 'Georgia, serif',
-              fontSize: '30px',
-              fontWeight: 700,
-              color: '#8B7D6B',
-              opacity: 0.18,
-            }}
-          >
-            M
-          </div>
-          {/* Ketchup blob */}
-          <div
-            aria-hidden="true"
-            className="absolute pointer-events-none"
-            style={{
-              bottom: '7px',
-              right: '6px',
-              width: '11px',
-              height: '8px',
-              borderRadius: '60% 40% 70% 30% / 55% 65% 35% 45%',
-              backgroundColor: '#C0392B',
-              opacity: 0.4,
-            }}
-          />
-          {/* Grease smear */}
-          <div
-            aria-hidden="true"
-            className="absolute pointer-events-none"
-            style={{
-              top: '11px',
-              left: '5px',
-              width: '22px',
-              height: '5px',
-              borderRadius: '50%',
-              backgroundColor: '#A89070',
-              opacity: 0.28,
-              transform: 'rotate(-10deg)',
-            }}
-          />
-        </>
-      )}
 
       {/* Label strip */}
       <div

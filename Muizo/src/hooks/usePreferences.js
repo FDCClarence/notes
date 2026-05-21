@@ -7,13 +7,16 @@ const DEFAULTS = {
   font: 'serif',
   tool: 'pen',
   inkColor: 'midnight',
-  highlightColor: 'none',
+  highlightColor: 'yellow',
+  sidebarOpen: true,
 }
 
 function loadPrefs() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS }
+    const prefs = raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS }
+    if (prefs.highlightColor === 'none') prefs.highlightColor = 'yellow'
+    return prefs
   } catch {
     return { ...DEFAULTS }
   }

@@ -30,7 +30,11 @@ export const surfaces = {
   },
   napkin: {
     label: 'Napkin',
-    bg: '#F2EDE4',
+    bg: 'transparent',
+    bgImage: "url('/assets/napkin.png')",
+    bgSize: 'cover',
+    bgPosition: 'center',
+    bgRepeat: 'no-repeat',
     rule: null,
     borderLeft: null,
     borderTop: null,
@@ -112,7 +116,6 @@ export const inkColors = [
 ]
 
 export const highlightColors = [
-  { id: 'none', label: 'None', hex: null },
   { id: 'yellow', label: 'Yellow', hex: '#FFF176' },
   { id: 'green', label: 'Green', hex: '#B9F6CA' },
   { id: 'cyan', label: 'Cyan', hex: '#80DEEA' },
